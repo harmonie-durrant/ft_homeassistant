@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connexion à 42",
+        "description": "Créez une application sur la [page des applications de l'API 42]({apps_url}) (aucune URI de redirection nécessaire), puis saisissez son UID, son secret et le login de l'étudiant à suivre.",
+        "data": {
+          "client_id": "UID de l'application",
+          "client_secret": "Secret de l'application",
+          "login": "Login de l'étudiant"
+        },
+        "data_description": {
+          "client_id": "L'UID affiché sur la page de votre application de l'API 42.",
+          "client_secret": "Le secret affiché sur la page de votre application de l'API 42.",
+          "login": "Le login 42 dont vous voulez suivre le logtime et le profil."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Mettre à jour le secret de l'application 42",
+        "description": "Le secret de l'application utilisé pour {login} a été refusé ou va bientôt expirer. Générez un nouveau secret sur la [page des applications de l'API 42]({apps_url}) et saisissez-le ci-dessous.",
+        "data": {
+          "client_id": "UID de l'application",
+          "client_secret": "Secret de l'application"
+        },
+        "data_description": {
+          "client_id": "L'UID affiché sur la page de votre application de l'API 42.",
+          "client_secret": "Le secret affiché sur la page de votre application de l'API 42."
+        }
+      },
+      "reconfigure": {
+        "title": "Changer l'application 42",
+        "description": "Changez l'application de l'API utilisée pour {login}. Laissez le secret vide pour garder l'actuel. Les applications se gèrent sur la [page des applications de l'API 42]({apps_url}).",
+        "data": {
+          "client_id": "UID de l'application",
+          "client_secret": "Secret de l'application"
+        },
+        "data_description": {
+          "client_id": "L'UID affiché sur la page de votre application de l'API 42.",
+          "client_secret": "Le secret affiché sur la page de votre application de l'API 42."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "L'UID ou le secret de l'application est invalide ou expiré.",
+      "cannot_connect": "Impossible de joindre l'API 42. Réessayez plus tard.",
+      "user_not_found": "Aucun utilisateur 42 avec ce login.",
+      "unknown": "Erreur inattendue, consultez les journaux."
+    },
+    "abort": {
+      "already_configured": "Cet étudiant est déjà configuré.",
+      "reauth_successful": "Les nouveaux identifiants ont été enregistrés.",
+      "reconfigure_successful": "Les nouveaux identifiants ont été enregistrés."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options 42 Intra",
+        "data": {
+          "scan_interval": "Intervalle de mise à jour"
+        },
+        "data_description": {
+          "scan_interval": "Fréquence de récupération des données de l'API 42, en minutes."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "logged_in": {
+        "name": "Connecté"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Actualiser"
+      }
+    },
+    "sensor": {
+      "logtime_today": {
+        "name": "Logtime aujourd'hui"
+      },
+      "logtime_week": {
+        "name": "Logtime cette semaine"
+      },
+      "logtime_month": {
+        "name": "Logtime ce mois-ci"
+      },
+      "location": {
+        "name": "Poste"
+      },
+      "level": {
+        "name": "Niveau",
+        "state_attributes": {
+          "cursus": {
+            "name": "Cursus"
+          },
+          "grade": {
+            "name": "Grade"
+          }
+        }
+      },
+      "wallet": {
+        "name": "Wallet"
+      },
+      "evaluation_points": {
+        "name": "Points de correction"
+      },
+      "secret_expiry": {
+        "name": "Expiration du secret de l'application"
+      }
+    }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Les identifiants de l'application 42 ont été refusés."
+    },
+    "rate_limited": {
+      "message": "La limite de requêtes de l'API 42 a été atteinte."
+    },
+    "update_failed": {
+      "message": "Erreur lors de la récupération des données de l'API 42 : {error}"
+    }
+  }
+}

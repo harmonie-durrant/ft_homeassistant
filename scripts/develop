@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Run a dev Home Assistant instance with this integration linked in.
+set -e
+cd "$(dirname "$0")/.."
+mkdir -p config/custom_components
+ln -sfn "$PWD/custom_components/ft_homeassistant" config/custom_components/ft_homeassistant
+# Trust the port forwarder's proxy headers, otherwise the UI answers "400: Bad Request".
+.venv/bin/python scripts/dev_http.py config
+while true; do
+  set +e
+  .venv/bin/hass --config config --debug
+  code=$?
+  set -e
+  [ "$code" -eq 100 ] || exit "$code"
+  echo "Restart requested, restarting Home Assistant..."
+done

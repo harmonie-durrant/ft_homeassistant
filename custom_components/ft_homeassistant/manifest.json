@@ -1,0 +1,18 @@
+{
+  "domain": "ft_homeassistant",
+  "name": "42 Intra",
+  "categories": [
+    "productivity_information",
+    "presence_location"
+  ],
+  "codeowners": [
+    "@harmonie-durrant"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/harmonie-durrant/ft_homeassistant",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/harmonie-durrant/ft_homeassistant/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

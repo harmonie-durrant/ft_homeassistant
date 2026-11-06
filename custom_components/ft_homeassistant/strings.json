@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to 42",
+        "description": "Create an application on the [42 API applications page]({apps_url}) (no redirect URI needed), then enter its UID and secret and the login of the student to follow.",
+        "data": {
+          "client_id": "Application UID",
+          "client_secret": "Application secret",
+          "login": "Student login"
+        },
+        "data_description": {
+          "client_id": "The UID shown on your 42 API application page.",
+          "client_secret": "The secret shown on your 42 API application page.",
+          "login": "The 42 login whose logtime and profile you want to follow."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Update the 42 application secret",
+        "description": "The application secret used for {login} was refused or is about to expire. Generate a new secret on the [42 API applications page]({apps_url}) and enter it below.",
+        "data": {
+          "client_id": "Application UID",
+          "client_secret": "Application secret"
+        },
+        "data_description": {
+          "client_id": "The UID shown on your 42 API application page.",
+          "client_secret": "The secret shown on your 42 API application page."
+        }
+      },
+      "reconfigure": {
+        "title": "Change the 42 application",
+        "description": "Change the API application used for {login}. Leave the secret empty to keep the current one. Applications are managed on the [42 API applications page]({apps_url}).",
+        "data": {
+          "client_id": "Application UID",
+          "client_secret": "Application secret"
+        },
+        "data_description": {
+          "client_id": "The UID shown on your 42 API application page.",
+          "client_secret": "The secret shown on your 42 API application page."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The application UID or secret is invalid or expired.",
+      "cannot_connect": "Could not reach the 42 API. Try again later.",
+      "user_not_found": "No 42 user with this login.",
+      "unknown": "Unexpected error, check the logs."
+    },
+    "abort": {
+      "already_configured": "This student is already configured.",
+      "reauth_successful": "The new credentials were saved.",
+      "reconfigure_successful": "The new credentials were saved."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "42 Intra options",
+        "data": {
+          "scan_interval": "Refresh interval"
+        },
+        "data_description": {
+          "scan_interval": "How often to fetch data from the 42 API, in minutes."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "logged_in": {
+        "name": "Logged in"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh"
+      }
+    },
+    "sensor": {
+      "logtime_today": {
+        "name": "Logtime today"
+      },
+      "logtime_week": {
+        "name": "Logtime this week"
+      },
+      "logtime_month": {
+        "name": "Logtime this month"
+      },
+      "location": {
+        "name": "Location"
+      },
+      "level": {
+        "name": "Level",
+        "state_attributes": {
+          "cursus": {
+            "name": "Cursus"
+          },
+          "grade": {
+            "name": "Grade"
+          }
+        }
+      },
+      "wallet": {
+        "name": "Wallet"
+      },
+      "evaluation_points": {
+        "name": "Evaluation points"
+      },
+      "secret_expiry": {
+        "name": "Application secret expiry"
+      }
+    }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "The 42 application credentials were refused."
+    },
+    "rate_limited": {
+      "message": "The 42 API rate limit was reached."
+    },
+    "update_failed": {
+      "message": "Error fetching data from the 42 API: {error}"
+    }
+  }
+}
