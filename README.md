@@ -5,6 +5,8 @@ Home Assistant, using the official 42 API.
 
 Requires Home Assistant **2026.3** or newer.
 
+<img width="1567" height="852" alt="image" src="https://github.com/user-attachments/assets/b7664b23-4952-4de3-8613-8e72c01300da" />
+
 ## Installation
 
 ### Marketplace (HACS)
