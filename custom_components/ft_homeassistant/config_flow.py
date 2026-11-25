@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import datetime
 from typing import Any
 
 import voluptuous as vol
@@ -23,6 +24,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from homeassistant.util import dt as dt_util
 
 from .api import (
     FortyTwoApiClient,
@@ -41,6 +43,7 @@ from .const import (
     LOGGER,
     MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
+    SECRET_EXPIRY_WARNING,
 )
 from .coordinator import FortyTwoConfigEntry
 
@@ -57,20 +60,20 @@ USER_SCHEMA = vol.Schema(
 
 async def _validate(
     hass: HomeAssistant, client_id: str, client_secret: str, user: str | int
-) -> tuple[dict[str, Any] | None, dict[str, str]]:
-    """Check the credentials and the user, return (user, errors)."""
+) -> tuple[dict[str, Any] | None, datetime | None, dict[str, str]]:
+    """Check the credentials and the user, return (user, secret expiry, errors)."""
     client = FortyTwoApiClient(async_get_clientsession(hass), client_id, client_secret)
     try:
-        return await client.async_get_user(user), {}
+        return await client.async_get_user(user), client.secret_valid_until, {}
     except FortyTwoAuthError:
-        return None, {"base": "invalid_auth"}
+        return None, None, {"base": "invalid_auth"}
     except FortyTwoNotFoundError:
-        return None, {CONF_LOGIN: "user_not_found"}
+        return None, None, {CONF_LOGIN: "user_not_found"}
     except FortyTwoConnectionError:
-        return None, {"base": "cannot_connect"}
+        return None, None, {"base": "cannot_connect"}
     except FortyTwoError:
         LOGGER.exception("Unexpected error from the 42 API")
-        return None, {"base": "unknown"}
+        return None, None, {"base": "unknown"}
 
 
 class FortyTwoConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -93,7 +96,9 @@ class FortyTwoConfigFlow(ConfigFlow, domain=DOMAIN):
             client_id = user_input[CONF_CLIENT_ID].strip()
             client_secret = user_input[CONF_CLIENT_SECRET].strip()
             login = user_input[CONF_LOGIN].strip().lower()
-            user, errors = await _validate(self.hass, client_id, client_secret, login)
+            user, _, errors = await _validate(
+                self.hass, client_id, client_secret, login
+            )
             if user is not None:
                 await self.async_set_unique_id(str(user["id"]))
                 self._abort_if_unique_id_configured()
@@ -148,17 +153,36 @@ class FortyTwoConfigFlow(ConfigFlow, domain=DOMAIN):
         *,
         require_secret: bool,
     ) -> ConfigFlowResult:
-        """Shared form for reauth and reconfigure (an empty secret keeps the current one)."""
+        """Shared form for reauth and reconfigure.
+
+        An empty secret keeps the current one, but only with the same UID: a secret
+        belongs to one application.
+        """
         errors: dict[str, str] = {}
+        expiry = ""
         if user_input is not None:
             client_id = user_input[CONF_CLIENT_ID].strip()
-            client_secret = (
-                user_input.get(CONF_CLIENT_SECRET) or ""
-            ).strip() or entry.data[CONF_CLIENT_SECRET]
-            user, errors = await _validate(
-                self.hass, client_id, client_secret, entry.data[CONF_USER_ID]
-            )
-            if user is not None:
+            client_secret = (user_input.get(CONF_CLIENT_SECRET) or "").strip()
+            if not client_secret and client_id != entry.data[CONF_CLIENT_ID]:
+                errors[CONF_CLIENT_SECRET] = "secret_required"
+            else:
+                user, valid_until, errors = await _validate(
+                    self.hass,
+                    client_id,
+                    client_secret or entry.data[CONF_CLIENT_SECRET],
+                    entry.data[CONF_USER_ID],
+                )
+                # Saving a secret that is about to expire would reload the entry
+                # straight into a new reauth request (see the coordinator).
+                if (
+                    user is not None
+                    and valid_until is not None
+                    and valid_until - dt_util.utcnow() < SECRET_EXPIRY_WARNING
+                ):
+                    errors = {CONF_CLIENT_SECRET: "secret_expiring"}
+                    expiry = dt_util.as_local(valid_until).strftime("%Y-%m-%d %H:%M")
+            if not errors:
+                client_secret = client_secret or entry.data[CONF_CLIENT_SECRET]
                 return self.async_update_reload_and_abort(
                     entry,
                     data_updates={
@@ -184,6 +208,7 @@ class FortyTwoConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={
                 "apps_url": APPS_URL,
                 "login": entry.data[CONF_LOGIN],
+                "expiry": expiry,
             },
         )
 

@@ -29,7 +29,7 @@
       },
       "reconfigure": {
         "title": "Changer l'application 42",
-        "description": "Changez l'application de l'API utilisée pour {login}. Laissez le secret vide pour garder l'actuel. Les applications se gèrent sur la [page des applications de l'API 42]({apps_url}).",
+        "description": "Changez l'application de l'API utilisée pour {login}. Laissez le secret vide pour garder l'actuel (seulement si l'UID ne change pas). Les applications se gèrent sur la [page des applications de l'API 42]({apps_url}).",
         "data": {
           "client_id": "UID de l'application",
           "client_secret": "Secret de l'application"
@@ -44,7 +44,9 @@
       "invalid_auth": "L'UID ou le secret de l'application est invalide ou expiré.",
       "cannot_connect": "Impossible de joindre l'API 42. Réessayez plus tard.",
       "user_not_found": "Aucun utilisateur 42 avec ce login.",
-      "unknown": "Erreur inattendue, consultez les journaux."
+      "unknown": "Erreur inattendue, consultez les journaux.",
+      "secret_required": "Saisissez le secret de la nouvelle application. Le secret actuel ne fonctionne qu'avec l'UID actuel.",
+      "secret_expiring": "Ce secret expire le {expiry}. Générez un nouveau secret sur la page des applications de l'API 42 et saisissez-le ici."
     },
     "abort": {
       "already_configured": "Cet étudiant est déjà configuré.",

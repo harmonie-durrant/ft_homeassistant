@@ -151,14 +151,71 @@ async def test_reconfigure_keeps_secret(
     assert result["step_id"] == "reconfigure"
 
     result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_CLIENT_ID: "u-s4t2ud-uid"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert config_entry.data[CONF_CLIENT_ID] == "u-s4t2ud-uid"
+    assert config_entry.data[CONF_CLIENT_SECRET] == "s-s4t2ud-secret"
+    # Validated against the stored user id, not the login.
+    assert any(call[1].path == USER_URL.removeprefix("https://api.intra.42.fr") for call in mock_api.mock_calls)
+    await hass.async_block_till_done()
+
+
+@pytest.mark.freeze_time(NOW)
+async def test_reconfigure_new_uid_needs_secret(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, config_entry: MockConfigEntry
+) -> None:
+    """A new UID can't reuse the current secret, which belongs to the old one."""
+    config_entry.add_to_hass(hass)
+    result = await config_entry.start_reconfigure_flow(hass)
+
+    result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_CLIENT_ID: "uid2"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {CONF_CLIENT_SECRET: "secret_required"}
+    assert mock_api.call_count == 0  # refused before calling the API
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_CLIENT_ID: "uid2", CONF_CLIENT_SECRET: "new"}
     )
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
     assert config_entry.data[CONF_CLIENT_ID] == "uid2"
+    assert config_entry.data[CONF_CLIENT_SECRET] == "new"
+    await hass.async_block_till_done()
+
+
+@pytest.mark.freeze_time(NOW)
+async def test_reauth_refuses_expiring_secret(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, config_entry: MockConfigEntry
+) -> None:
+    """A secret inside the expiry warning window would trigger reauth again on reload."""
+    config_entry.add_to_hass(hass)
+    # 2026-11-08 12:00 UTC: two days after NOW, inside the warning window.
+    mock_token(aioclient_mock, secret_valid_until=1794139200)
+    aioclient_mock.get(USER_URL, json=USER)
+    result = await config_entry.start_reauth_flow(hass)
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_CLIENT_ID: "u-s4t2ud-uid", CONF_CLIENT_SECRET: "old"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {CONF_CLIENT_SECRET: "secret_expiring"}
+    assert result["description_placeholders"]["expiry"].startswith("2026-11-08")
     assert config_entry.data[CONF_CLIENT_SECRET] == "s-s4t2ud-secret"
-    # Validated against the stored user id, not the login.
-    assert any(call[1].path == USER_URL.removeprefix("https://api.intra.42.fr") for call in mock_api.mock_calls)
+
+    # A newly generated secret, valid for a month, is accepted.
+    aioclient_mock.clear_requests()
+    mock_token(aioclient_mock, secret_valid_until=1794139200 + 30 * 86400)
+    aioclient_mock.get(USER_URL, json=USER)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_CLIENT_ID: "u-s4t2ud-uid", CONF_CLIENT_SECRET: "new"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert config_entry.data[CONF_CLIENT_SECRET] == "new"
     await hass.async_block_till_done()
 
 

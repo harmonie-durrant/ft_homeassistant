@@ -29,7 +29,7 @@
       },
       "reconfigure": {
         "title": "Change the 42 application",
-        "description": "Change the API application used for {login}. Leave the secret empty to keep the current one. Applications are managed on the [42 API applications page]({apps_url}).",
+        "description": "Change the API application used for {login}. Leave the secret empty to keep the current one (only if the UID doesn't change). Applications are managed on the [42 API applications page]({apps_url}).",
         "data": {
           "client_id": "Application UID",
           "client_secret": "Application secret"
@@ -44,7 +44,9 @@
       "invalid_auth": "The application UID or secret is invalid or expired.",
       "cannot_connect": "Could not reach the 42 API. Try again later.",
       "user_not_found": "No 42 user with this login.",
-      "unknown": "Unexpected error, check the logs."
+      "unknown": "Unexpected error, check the logs.",
+      "secret_required": "Enter the secret of the new application. The current secret only works with the current UID.",
+      "secret_expiring": "This secret expires on {expiry}. Generate a new secret on the 42 API applications page and enter it here."
     },
     "abort": {
       "already_configured": "This student is already configured.",

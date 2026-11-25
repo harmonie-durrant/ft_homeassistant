@@ -5,7 +5,7 @@ Home Assistant, using the official 42 API.
 
 Requires Home Assistant **2026.3** or newer.
 
-<img width="1567" height="852" alt="image" src="https://github.com/user-attachments/assets/b7664b23-4952-4de3-8613-8e72c01300da" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/b7664b23-4952-4de3-8613-8e72c01300da" />
 
 ## Installation
 
@@ -55,7 +55,7 @@ One device per student (named after their display name), with:
 - **Refresh interval**: how often the data is fetched, from 5 to 120 minutes (15 by default).
 
 To change the application UID or secret, use **⋮ → Reconfigure** on the entry. Leave the
-secret empty to keep the current one.
+secret empty to keep the current one (only when the UID stays the same: a new application needs its own secret).
 
 ## Notes
 
